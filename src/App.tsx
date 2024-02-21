@@ -3,9 +3,7 @@ import {
   View,
   Image,
   ImageBackground,
-  Pressable,
   StyleSheet,
-  Text,
   ScrollView,
   SafeAreaView,
   Linking,
@@ -15,41 +13,8 @@ import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import Slider from '@react-native-community/slider';
 import {useCameraPermission} from 'react-native-vision-camera';
 
-interface CroppedImageProps {
-  cropHeight: number;
-  cropWidth: number;
-  uri: string;
-  width: number;
-  height: number;
-}
-
-const CroppedImage = ({
-  cropHeight,
-  cropWidth,
-  uri,
-  width,
-  height,
-}: CroppedImageProps) => (
-  <View
-    style={{
-      overflow: 'hidden',
-      height: cropHeight || 0,
-      width: cropWidth || 0,
-      backgroundColor: 'transparent',
-    }}>
-    <Image
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: width || 0,
-        height: height || 0,
-      }}
-      source={{uri}}
-      resizeMode="cover"
-    />
-  </View>
-);
+import CroppedImage from './components/CroppedImage';
+import CustomButton from './components/CustomButton';
 
 const App = () => {
   const initialPosition = 0;
@@ -67,7 +32,6 @@ const App = () => {
   const [selectedImages, setSelectedImages] = useState<Array<{ uri: string }>>([]);
 
   useEffect(() => {
-    console.log(selectedImages);
     if (selectedImages.length > 0) {
       Image.getSize(selectedImages[0].uri, (width, height) => {
         setImageWidth(width > screenWidth ? 300 : width);
@@ -95,12 +59,12 @@ const App = () => {
 
     if (result.assets && result.assets?.length > 0) {
       const imageUri = result.assets[0].uri;
-      if (!imageUri) return
+      if (!imageUri) return;
+      setValue(0);
       if (type === 'first') {
         setSelectedImages([{ uri: imageUri }, selectedImages[1]])
         return;
       }
-      console.log('First?', selectedImages[0]);
       setSelectedImages([selectedImages[0], { uri: imageUri }]);
     }
   };
@@ -124,30 +88,21 @@ const App = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         {!hasPermission ? (
-          <View style={styles.buttonContainer}>
-            <Pressable
-              onPress={() => onRequestCameraPermission()}
-              style={styles.button}>
-              <Text style={styles.text}>Give Permissions</Text>
-            </Pressable>
-          </View>
+          <CustomButton
+            onPress={onRequestCameraPermission}
+            title="Give Permissions"
+          />
         ) : (
           <View>
-            <View style={styles.buttonContainer}>
-              <Pressable style={styles.button} onPress={() => onSelectPhoto()}>
-                <Text style={styles.text}>Select Photo's</Text>
-              </Pressable>
-              <Pressable
-                style={styles.button}
-                onPress={() => onMakePhoto('first')}>
-                <Text style={styles.text}>Make First Photo</Text>
-              </Pressable>
-              <Pressable
-                style={styles.button}
-                onPress={() => onMakePhoto('second')}>
-                <Text style={styles.text}>Make Second Photo</Text>
-              </Pressable>
-            </View>
+            <CustomButton onPress={onSelectPhoto} title="Select Photo's" />
+            <CustomButton
+              onPress={() => onMakePhoto('first')}
+              title="Make First Photo"
+            />
+            <CustomButton
+              onPress={() => onMakePhoto('second')}
+              title="Make Second Photo"
+            />
             {selectedImages.length > 0 && (
               <View style={styles.imagesContainer}>
                 <ImageBackground
@@ -180,7 +135,6 @@ const App = () => {
                 minimumTrackTintColor="#ccc"
                 maximumTrackTintColor="blue"
                 thumbTintColor="#04AA6D"
-                style={styles.sliderContainer}
               />
             )}
           </View>
@@ -195,23 +149,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     padding: 16,
-  },
-  buttonContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  button: {
-    height: 50,
-    width: 150,
-    backgroundColor: '#04AA6D',
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  text: {
-    color: 'white',
-    fontSize: 16,
   },
   imagesContainer: {
     marginTop: 16,
@@ -228,24 +165,10 @@ const styles = StyleSheet.create({
     height: 400,
     borderRadius: 10,
   },
-  topImage: {
-    position: 'absolute',
-  },
-  sliderContainer: {
-    marginTop: 16,
-    width: '100%',
-  },
   imageContainer: {
     flex: 1,
     flexDirection: 'row',
     position: 'relative',
-  },
-  overlayLine: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    width: 2,
-    backgroundColor: 'red', // Change the color as needed
   },
 });
 
